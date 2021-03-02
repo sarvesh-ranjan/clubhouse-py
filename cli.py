@@ -130,7 +130,7 @@ def process_onboarding(client):
         print("    Try registering by real device if this process pops again.")
         break
 
-def print_channel_list(client, max_limit=20):
+def print_channel_list(client, max_limit=2000):
     """ (Clubhouse) -> NoneType
 
     Print list of channels
@@ -140,19 +140,17 @@ def print_channel_list(client, max_limit=20):
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("")
     table.add_column("channel_name", style="cyan", justify="right")
+    table.add_column("club_name")
     table.add_column("topic")
     table.add_column("speaker_count")
     channels = client.get_channels()['channels']
-    i = 0
     for channel in channels:
-        i += 1
-        if i > max_limit:
-            break
         _option = ""
         _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
         table.add_row(
             str(_option),
             str(channel['channel']),
+            str(channel['club_name']),
             str(channel['topic']),
             str(int(channel['num_speakers'])),
         )
@@ -163,7 +161,7 @@ def chat_main(client):
 
     Main function for chat
     """
-    max_limit = 20
+    max_limit = 2000
     channel_speaker_permission = False
     _wait_func = None
     _ping_func = None
@@ -232,18 +230,18 @@ def chat_main(client):
         table.add_column("name")
         table.add_column("is_speaker")
         table.add_column("is_moderator")
+        table.add_column("photo_url")
         users = channel_info['users']
-        i = 0
+
         for user in users:
-            i += 1
-            if i > max_limit:
-                break
+            print(user)
             table.add_row(
                 str(user['user_id']),
                 str(user['name']),
                 str(user['username']),
                 str(user['is_speaker']),
                 str(user['is_moderator']),
+                str(user['photo_url']),
             )
             # Check if the user is the speaker
             if user['user_id'] == int(user_id):
