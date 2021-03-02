@@ -234,7 +234,6 @@ def chat_main(client):
         users = channel_info['users']
 
         for user in users:
-            print(user)
             table.add_row(
                 str(user['user_id']),
                 str(user['name']),
