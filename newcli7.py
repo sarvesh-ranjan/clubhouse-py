@@ -235,11 +235,10 @@ def chat_main(client):
                 continue
 
         print(Fore.GREEN + "______________________________Joining Channel_______________________________\n")
-        # print(channel_info)
-        print("Channel: ", channel_info['channel_id'], channel_info['channel'], channel_info['topic'])
-        print(Fore.RED)
-        print("Club: ", channel_info['club_id'], channel_info['club_name'])
-        print("____________________________________________________________________________\n")
+        print(channel_info)
+        print(channel_info['channel_id'], channel_info['channel'], channel_info['topic'])
+        print(channel_info['club_id'], channel_info['club_name'])
+
         # List currently available users (TOP 20 only.)
         # Also, check for the current user's speaker permission.
         channel_speaker_permission = False

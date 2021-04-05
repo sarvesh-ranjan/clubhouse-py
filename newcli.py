@@ -11,9 +11,6 @@ import sys
 import threading
 import configparser
 import keyboard
-import sys
-import colorama
-from colorama import Fore, Style
 from rich.table import Table
 from rich.console import Console
 from clubhouse.clubhouse import Clubhouse
@@ -144,29 +141,21 @@ def print_channel_list(client, max_limit=2000):
     table.add_column("")
     table.add_column("channel_name", style="cyan", justify="right")
     table.add_column("topic")
-    table.add_column("club_name")
     table.add_column("speaker_count")
-    table.add_column("speakers")
     channels = client.get_channels()['channels']
-    for channel in channels:
-        users = channel["users"]
-        speakers = ""
-        for user in users:
-            if user['is_speaker'] or user['is_moderator']:
-                if speakers == "":
-                    speakers += user["name"]
-                else:
-                    speakers += "," + user["name"]
 
+    i = 0
+    for channel in channels:
+        i += 1
+        # if i > max_limit:
+        #     break
         _option = ""
         _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
         table.add_row(
             str(_option),
             str(channel['channel']),
             str(channel['topic']),
-            str(channel['club_name']),
             str(int(channel['num_speakers'])),
-            str(speakers),
         )
     console.print(table)
 
@@ -234,12 +223,6 @@ def chat_main(client):
                 print(f"[-] Error while joining the channel ({channel_info['error_message']})")
                 continue
 
-        print(Fore.GREEN + "______________________________Joining Channel_______________________________\n")
-        # print(channel_info)
-        print("Channel: ", channel_info['channel_id'], channel_info['channel'], channel_info['topic'])
-        print(Fore.RED)
-        print("Club: ", channel_info['club_id'], channel_info['club_name'])
-        print("____________________________________________________________________________\n")
         # List currently available users (TOP 20 only.)
         # Also, check for the current user's speaker permission.
         channel_speaker_permission = False
@@ -250,7 +233,6 @@ def chat_main(client):
         table.add_column("name")
         table.add_column("is_speaker")
         table.add_column("is_moderator")
-        table.add_column("photo_url")
         users = channel_info['users']
 
         for user in users:
@@ -260,7 +242,6 @@ def chat_main(client):
                 str(user['username']),
                 str(user['is_speaker']),
                 str(user['is_moderator']),
-                str(user['photo_url']),
             )
             # Check if the user is the speaker
             if user['user_id'] == int(user_id):

@@ -10,10 +10,8 @@ import os
 import sys
 import threading
 import configparser
+import time
 import keyboard
-import sys
-import colorama
-from colorama import Fore, Style
 from rich.table import Table
 from rich.console import Console
 from clubhouse.clubhouse import Clubhouse
@@ -133,7 +131,7 @@ def process_onboarding(client):
         print("    Try registering by real device if this process pops again.")
         break
 
-def print_channel_list(client, max_limit=2000):
+def print_channel_list(client, max_limit=200):
     """ (Clubhouse) -> NoneType
 
     Print list of channels
@@ -144,38 +142,76 @@ def print_channel_list(client, max_limit=2000):
     table.add_column("")
     table.add_column("channel_name", style="cyan", justify="right")
     table.add_column("topic")
-    table.add_column("club_name")
     table.add_column("speaker_count")
-    table.add_column("speakers")
-    channels = client.get_channels()['channels']
-    for channel in channels:
-        users = channel["users"]
-        speakers = ""
-        for user in users:
-            if user['is_speaker'] or user['is_moderator']:
-                if speakers == "":
-                    speakers += user["name"]
-                else:
-                    speakers += "," + user["name"]
+    # a = client.update_displayname(name="Sarvesh")
+    # a = client.update_displayname(name="Sarvesh")
+    # print(a)
+    channels = client.follow_club(club_id="47")
 
-        _option = ""
-        _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
-        table.add_row(
-            str(_option),
-            str(channel['channel']),
-            str(channel['topic']),
-            str(channel['club_name']),
-            str(int(channel['num_speakers'])),
-            str(speakers),
-        )
-    console.print(table)
+    print(channels)
+    # userIds = []
+    # count = 0
+    # topics = "64,97,89,90,100,10,107,108,109,115,131,136,140,145,155,74,75,43,44,45,46"
+    # for topic in topics.split(","):
+    #
+    #     print("Reading topic: ", topic)
+    #     count_topic = 10
+    #     me = client.get_users_for_topic(topic_id=topic)
+    #
+    #     for user in me["users"]:
+    #         print("Total: " , count, " Topic: " , count_topic, " ", "Following: ", user["user_id"], user["name"], user["bio"])
+    #         # userIds.append(user["user_id"])
+    #         response = client.follow(user["user_id"])
+    #         print(response)
+    #         count = count + 1
+    #         print(count)
+    #         time.sleep(10)
+    #         count_topic = count_topic - 1
+    #         if(count_topic < 0):
+    #             print("Already followed 10 people")
+    #             break
+    # print("Followed : ", count)
+
+    # inp = "663,7557,1720,2225,946,370,72,1166,143,434,598,523,4559,,2234,7956,5443,2818,8468,3226,27,322,44,87,28552"
+    # for id in inp.split(","):s
+    #     r = client.follow(user_id=id)
+    #     print(id, type(id), r)
+    #     time.sleep(1)
+    # follows = client.get_suggested_follows_all()
+    # print(type(follows["users"]))
+    # for item in follows["users"]:
+    #     print(item["user_id"])
+    #
+    # jdata = json.loads(follows)
+    # for k, v in follows.items():
+    #     print(k)
+    #     # print(dv)
+    # clubs = client.search_clubs("Cannabis")
+    # print(clubs)
+    # 715,266,64032395,4,1908,5,1940,881,4588,2021,977,904,1907,1322,776,104,2301,663,7557,1720,2225,946,370,72,1166,143,434,598,523,4559,,2234,7956,5443,2818,8468,3226,27,322,44,87,28552
+    # follow = client.follow_club(club_id="10486")
+    # print(follow)
+    # i = 0
+    # for channel in channels:
+    #     i += 1
+    #     if i > max_limit:
+    #         break
+    #     _option = ""
+    #     _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
+    #     table.add_row(
+    #         str(_option),
+    #         str(channel['channel']),
+    #         str(channel['topic']),
+    #         str(int(channel['num_speakers'])),
+    #     )
+    # console.print(table)
 
 def chat_main(client):
     """ (Clubhouse) -> NoneType
 
     Main function for chat
     """
-    max_limit = 2000
+    max_limit = 200
     channel_speaker_permission = False
     _wait_func = None
     _ping_func = None
@@ -234,12 +270,6 @@ def chat_main(client):
                 print(f"[-] Error while joining the channel ({channel_info['error_message']})")
                 continue
 
-        print(Fore.GREEN + "______________________________Joining Channel_______________________________\n")
-        # print(channel_info)
-        print("Channel: ", channel_info['channel_id'], channel_info['channel'], channel_info['topic'])
-        print(Fore.RED)
-        print("Club: ", channel_info['club_id'], channel_info['club_name'])
-        print("____________________________________________________________________________\n")
         # List currently available users (TOP 20 only.)
         # Also, check for the current user's speaker permission.
         channel_speaker_permission = False
@@ -250,17 +280,18 @@ def chat_main(client):
         table.add_column("name")
         table.add_column("is_speaker")
         table.add_column("is_moderator")
-        table.add_column("photo_url")
         users = channel_info['users']
-
+        i = 0
         for user in users:
+            i += 1
+            if i > max_limit:
+                break
             table.add_row(
                 str(user['user_id']),
                 str(user['name']),
                 str(user['username']),
                 str(user['is_speaker']),
                 str(user['is_moderator']),
-                str(user['photo_url']),
             )
             # Check if the user is the speaker
             if user['user_id'] == int(user_id):

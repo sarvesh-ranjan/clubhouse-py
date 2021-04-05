@@ -141,13 +141,14 @@ def print_channel_list(client, max_limit=2000):
     # Get channels and print out
     console = Console()
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("")
+    table.add_column("#")
     table.add_column("channel_name", style="cyan", justify="right")
     table.add_column("topic")
     table.add_column("club_name")
     table.add_column("speaker_count")
     table.add_column("speakers")
     channels = client.get_channels()['channels']
+    i = 1
     for channel in channels:
         users = channel["users"]
         speakers = ""
@@ -161,13 +162,15 @@ def print_channel_list(client, max_limit=2000):
         _option = ""
         _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
         table.add_row(
-            str(_option),
+            str(i),
+            # str(_option),
             str(channel['channel']),
             str(channel['topic']),
             str(channel['club_name']),
             str(int(channel['num_speakers'])),
             str(speakers),
         )
+        i+=1
     console.print(table)
 
 def chat_main(client):
@@ -234,38 +237,7 @@ def chat_main(client):
                 print(f"[-] Error while joining the channel ({channel_info['error_message']})")
                 continue
 
-        print(Fore.GREEN + "______________________________Joining Channel_______________________________\n")
-        # print(channel_info)
-        print("Channel: ", channel_info['channel_id'], channel_info['channel'], channel_info['topic'])
-        print(Fore.RED)
-        print("Club: ", channel_info['club_id'], channel_info['club_name'])
-        print("____________________________________________________________________________\n")
-        # List currently available users (TOP 20 only.)
-        # Also, check for the current user's speaker permission.
-        channel_speaker_permission = False
-        console = Console()
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("user_id", style="cyan", justify="right")
-        table.add_column("username")
-        table.add_column("name")
-        table.add_column("is_speaker")
-        table.add_column("is_moderator")
-        table.add_column("photo_url")
-        users = channel_info['users']
-
-        for user in users:
-            table.add_row(
-                str(user['user_id']),
-                str(user['name']),
-                str(user['username']),
-                str(user['is_speaker']),
-                str(user['is_moderator']),
-                str(user['photo_url']),
-            )
-            # Check if the user is the speaker
-            if user['user_id'] == int(user_id):
-                channel_speaker_permission = bool(user['is_speaker'])
-        console.print(table)
+        print_users(channel_info, user_id)
 
         # Check for the voice level.
         if RTC:
@@ -289,24 +261,122 @@ def chat_main(client):
             elif sys.platform == "win32": # Windows
                 _hotkey = "ctrl+shift+h"
 
+            _hotkey_refresh = "1"
+            _hotkey_exit = "0"
+
+            print(f"[*] Press [{_hotkey_refresh}] to refresh conversation.")
             print(f"[*] Press [{_hotkey}] to raise your hands for the speaker permission.")
-            keyboard.add_hotkey(
-                _hotkey,
-                _request_speaker_permission,
-                args=(client, channel_name, user_id)
-            )
+            print(f"[*] Press [{_hotkey_exit}] to quit conversation.\n")
 
-        input("[*] Press [Enter] to quit conversation.\n")
-        keyboard.unhook_all()
+            # keyboard.add_hotkey(
+            #     _hotkey,
+            #     _request_speaker_permission,
+            #     args=(client, channel_name, user_id),
+            #     trigger_on_release=True,
+            # )
+            # keyboard.add_hotkey(
+            #     _hotkey_refresh,
+            #     print_users,
+            #     args=(channel_info, user_id),
+            #     trigger_on_release=True,
+            # )
 
-        # Safely leave the channel upon quitting the channel.
-        if _ping_func:
-            _ping_func.set()
-        if _wait_func:
-            _wait_func.set()
-        if RTC:
-            RTC.leaveChannel()
-        client.leave_channel(channel_name)
+
+
+        # define the function blocks
+        def refresh():
+            print("Refreshing")
+            print_users(channel_info, user_id)
+
+        def exit():
+            print("Exiting channel")
+            # Safely leave the channel upon quitting the channel.
+            if _ping_func:
+                _ping_func.set()
+            if _wait_func:
+                _wait_func.set()
+            if RTC:
+                RTC.leaveChannel()
+
+            client.leave_channel(channel_name)
+        def raise_hand():
+            print("Raising hand")
+            _request_speaker_permission(client, channel_name, user_id)
+
+        # map the inputs to the function blocks
+        options = {
+                   1: refresh,
+                   0: exit,
+            2: raise_hand,
+                   }
+
+        inp = input()
+        options[int(inp)]()
+        input(f"[*] Press [Enter] to quit conversation.\n")
+        ##keyboard.unhook_all()
+
+
+
+
+def print_users(channel_info, user_id):
+    print(Fore.GREEN + "______________________________Joined Channel_______________________________\n")
+    # print(channel_info)
+    print("Channel: -> ")
+    print("ChannelID: ", channel_info['channel_id'], " ChannelName: ", channel_info['channel'])
+    print("Topic: ", channel_info['topic'])
+    print(Fore.CYAN)
+    print("Club: -> ")
+    print("ClubID: ", channel_info['club_id'], " ChannelInfo: ", channel_info['club_name'])
+    print("____________________________________________________________________________")
+    print(Fore.RED)
+
+    # List currently available users (TOP 20 only.)
+    # Also, check for the current user's speaker permission.
+    channel_speaker_permission = False
+    console = Console()
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("#", style="cyan", justify="right")
+    table.add_column("user_id")
+    table.add_column("username")
+    table.add_column("name")
+    table.add_column("is_speaker")
+    table.add_column("is_moderator")
+    table.add_column("photo_url")
+    users = channel_info['users']
+    i = 0
+    for user in users:
+        is_speaker = user['is_speaker']
+        if not is_speaker:
+            is_speaker = "-"
+        is_moderator = user['is_moderator']
+        if not is_moderator:
+            is_moderator = "-"
+
+        table.add_row(
+            str(i),
+            str(user['user_id']),
+            str(user['name']),
+            str(user['username']),
+            str(is_speaker),
+            str(is_moderator),
+            str(user['photo_url']),
+        )
+        i+=1
+        # Check if the user is the speaker
+        if user['user_id'] == int(user_id):
+            channel_speaker_permission = bool(user['is_speaker'])
+    console.print(table)
+
+    print(Fore.GREEN + "______________________________Joining Channel_____________________________\n")
+    # print(channel_info)
+    print("Channel: -> ")
+    print("ChannelID: ", channel_info['channel_id'], " ChannelName: ", channel_info['channel'])
+    print("Topic: ", channel_info['topic'])
+    print(Fore.CYAN)
+    print("Club: -> ")
+    print("ClubID: ", channel_info['club_id'], " ChannelInfo: ", channel_info['club_name'])
+    print("____________________________________________________________________________")
+    print(Fore.RED)
 
 def user_authentication(client):
     """ (Clubhouse) -> NoneType
