@@ -12,9 +12,9 @@ import threading
 import configparser
 import keyboard
 import sys
-import json
-from pygments import highlight, lexers, formatters
 import time
+import colorama
+from colorama import Fore, Style
 from rich.table import Table
 from rich.console import Console
 from clubhouse.clubhouse import Clubhouse
@@ -140,76 +140,68 @@ def print_channel_list(client, max_limit=2000):
     Print list of channels
     """
     # Get channels and print out
+
     console = Console()
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("")
-    table.add_column("channel_name", style="cyan", justify="right")
+    table.add_column("#")
+    table.add_column("channel", style="cyan", justify="right")
     table.add_column("topic")
     table.add_column("club_name")
-    table.add_column("speaker_count")
+    table.add_column("users_count")
     table.add_column("speakers")
-    # SarveshRanjan user_id=1665037778
-    # channels = client.follow_club(club_id="1091619179")
+    channels = client.get_channels()['channels']
+    i = 1
+    for channel in channels:
+
+        users = channel["users"]
+        speakers = ""
+        for user in users:
+            if user['is_speaker'] or user['is_moderator']:
+                if speakers == "":
+                    speakers += user["name"]
+                else:
+                    speakers += "," + user["name"]
 
 
-    formatted_json = json.dumps(client.follow_club(562769261), sort_keys=True, indent=4)
-    colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
-    print(colorful_json)
-
-    # formatted_json = json.dumps(client.get_actionable_notifications(), sort_keys=True, indent=4)
-    # colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
-    # print(colorful_json)
-
-    #a = client.join_channel(user_id="697056119")
-    #a = client.get_actionable_notifications()
-    # a = client.follow_club(source_topic_id="1664686491")
-
-    # a = client.get_actionable_notifications()
-    # print(a)
-    # a = json.dumps(client.search_clubs("Kashmir"), sort_keys=True, indent=4)
-    # a = json.dumps(client.get_notifications(),py sort_keys=True, indent=4)
-    # a = json.dumps(client.get_profile(user_id="1665037778"), sort_keys=True, indent=4)
-    # print(a)
-
-    # unfollow="500,2625,12160,7815,1354,4911,7729,6213,9599,4769,955,903,5062,1056,625,1312,4346,300,1215,9,4003,4620,334,6556,9638,3967,9585,5345,5692,10463,7466,5087,1348,7732,5068,360,10653,8602,1414,131,2267,3441,4075,786,203,425,163,58,8758,6158,1580,12213,5523,3829,7975,1150,6307,6827"
-    #
-    # for club in unfollow.split(','):
-    #     print("Unfollowing club: ", club)
-    #     b = client.unfollow_club(club_id=club)3339999
-    #     print(b)
-    #     time.sleep(2)
-    # #
-    # print(formatted_json)
-    #
-
-    # for channel in channels:
-    #     users = channel["users"]
-    #     speakers = ""
-    #     for user in users:
-    #         if user['is_speaker'] or user['is_moderator']:
-    #             bio = client.get_profile(user_id=user["user_id"])["user_profile"]["bio"]
-    #             speakers.join(user["name"])
-    #             print(bio[:10])
-    #
-    #
-    #
-    #     _option = ""
-    #     _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
-    #     table.add_row(
-    #         str(_option),
-    #         str(channel['channel']),
-    #         str(channel['topic']),
-    #         str(channel['club_name']),
-    #         str(int(channel['num_speakers'])),
-    #     )
-    # console.print(table)
+        _option = ""
+        _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
+        clubInfo = channel['club']
+        clubName = ""
+        
+        if clubInfo:
+            clubName = clubInfo['name']
+        if i%2 == 0:
+            table.add_row(
+                '[cyan]'+str(i),
+                # '[cyan]'+str(_option),
+                '[cyan]'+str(channel['channel']),
+                '[cyan]'+str(channel['topic']),
+                '[cyan]'+str(clubName),
+                '[cyan]'+str(channel['num_speakers']),
+                '[cyan]'+str(speakers),
+            )
+            
+        else:
+            table.add_row(
+                '[orange1]'+str(i),
+                # '[orange1]'+str(_option),
+                '[orange1]'+str(channel['channel']),
+                '[orange1]'+str(channel['topic']),
+                '[orange1]'+str(clubName),
+                '[orange1]'+str(channel['num_speakers']),
+                '[orange1]'+str(speakers),
+            )
+        i+=1
+        
+    console.print(table)
+    
 
 def chat_main(client):
     """ (Clubhouse) -> NoneType
 
     Main function for chat
     """
-    max_limit = 20
+    max_limit = 2000
     channel_speaker_permission = False
     _wait_func = None
     _ping_func = None
@@ -268,33 +260,7 @@ def chat_main(client):
                 print(f"[-] Error while joining the channel ({channel_info['error_message']})")
                 continue
 
-        # List currently available users (TOP 20 only.)
-        # Also, check for the current user's speaker permission.
-        channel_speaker_permission = False
-        console = Console()
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("user_id", style="cyan", justify="right")
-        table.add_column("username")
-        table.add_column("name")
-        table.add_column("is_speaker")
-        table.add_column("is_moderator")
-        users = channel_info['users']
-        i = 0
-        for user in users:
-            i += 1
-            if i > max_limit:
-                break
-            table.add_row(
-                str(user['user_id']),
-                str(user['name']),
-                str(user['username']),
-                str(user['is_speaker']),
-                str(user['is_moderator']),
-            )
-            # Check if the user is the speaker
-            if user['user_id'] == int(user_id):
-                channel_speaker_permission = bool(user['is_speaker'])
-        console.print(table)
+
 
         # Check for the voice level.
         if RTC:
@@ -309,6 +275,34 @@ def chat_main(client):
         _ping_func = _ping_keep_alive(client, channel_name)
         _wait_func = None
 
+        print_users(channel_info, user_id, client)
+        print_channel_list(client, max_limit)
+        
+        users = channel_info['users']
+        number_of_users = len(users)
+   
+        print(Fore.GREEN + "______________________________Joined Channel_____________________________\n")
+        print("Channel: -> ")
+        print("ChannelID: ", channel_info['channel_id'], " ChannelName: ", channel_info['channel'])
+        print("Topic: ", channel_info['topic'])
+        print(Fore.CYAN)
+
+        clubInfo = channel_info['club']
+        clubID = ""
+        clubName = ""
+        clubDescription = ""
+        if clubInfo:
+            clubID = clubInfo['club_id']
+            clubName = clubInfo['name']
+            clubDescription = clubInfo['description']
+
+        print("Club: -> ")
+        print("ClubID: ", clubID, " ClubName: ", clubName)
+        print("Descriontion: ", clubDescription)
+        print("\nNumber of Users: ", number_of_users)
+        print("____________________________________________________________________________")
+        print(Fore.RED)
+
         # Add raise_hands key bindings for speaker permission
         # Sorry for the bad quality
         if not channel_speaker_permission:
@@ -318,14 +312,40 @@ def chat_main(client):
             elif sys.platform == "win32": # Windows
                 _hotkey = "ctrl+shift+h"
 
-            print(f"[*] Press [{_hotkey}] to raise your hands for the speaker permission.")
+            print(f"[*] Press [{_hotkey}] to RAISE YOUR HAND for the speaker permission.")
+
             keyboard.add_hotkey(
                 _hotkey,
                 _request_speaker_permission,
-                args=(client, channel_name, user_id)
+                args=(client, channel_name, user_id),
+                trigger_on_release=True,
             )
 
-        input("[*] Press [Enter] to quit conversation.\n")
+            _hotkey_refresh_users = "1"
+
+            print(f"[*] Press [{_hotkey_refresh_users}] to refresh USERS in conversation.")
+
+            keyboard.add_hotkey(
+                _hotkey_refresh_users,
+                print_users,
+                args=(channel_info, user_id, client),
+                trigger_on_release=True,
+            )
+
+            _hotkey_refresh_channels = "2"
+
+            print(f"[*] Press [{_hotkey_refresh_channels}] to refresh CHANNELS in conversation.")
+
+            keyboard.add_hotkey(
+                _hotkey_refresh_channels,
+                print_channel_list,
+                args=(client, max_limit),
+                trigger_on_release=True,
+            )
+
+        print(Fore.MAGENTA)
+        input(f"[*] Press [Enter] to quit conversation.\n\t____________________\n\n")
+
         keyboard.unhook_all()
 
         # Safely leave the channel upon quitting the channel.
@@ -336,6 +356,89 @@ def chat_main(client):
         if RTC:
             RTC.leaveChannel()
         client.leave_channel(channel_name)
+
+def print_users(channel_info, user_id, client):
+    users = channel_info['users']
+
+    number_of_users = len(users)
+
+    print(Fore.GREEN + "______________________________Joining Channel_______________________________\n")
+    # print(channel_info)
+    print("Channel: -> ")
+    print("ChannelID: ", channel_info['channel_id'], " ChannelName: ", channel_info['channel'])
+    print("Topic: ", channel_info['topic'])
+    print(Fore.CYAN)
+
+    clubInfo = channel_info['club']
+    clubID = ""
+    clubName = ""
+    clubDescription = ""
+    if clubInfo:
+        clubID = clubInfo['club_id']
+        clubName = clubInfo['name']
+        clubDescription = clubInfo['description']
+
+    print("Club: -> ")
+    print("ClubID: ", clubID, " ClubName: ", clubName)
+    print("Descriontion: ", clubDescription)
+    print("\nNumber of Users: ", number_of_users)
+    print("____________________________________________________________________________")
+    print(Fore.RED)
+
+    # List currently available users (TOP 20 only.)
+    # Also, check for the current user's speaker permission.
+    channel_speaker_permission = False
+    console = Console()
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("#", style="cyan", justify="right")
+    table.add_column("user_id")
+    table.add_column("username")
+    table.add_column("name")
+    table.add_column("is_speaker")
+    table.add_column("is_moderator")
+    table.add_column("description")
+
+
+    i = 1
+    for user in users:
+        is_speaker = user['is_speaker']
+        if not is_speaker:
+            is_speaker = "-"
+        is_moderator = user['is_moderator']
+        if not is_moderator:
+            is_moderator = "-"
+
+        desc = "-----"
+        if user['is_speaker']:
+            desc = client.get_profile(user['user_id'])['user_profile']['bio']
+        if i%2 == 0:
+            table.add_row(
+                '[white]'+str(i),
+                '[white]'+str(user['user_id']),
+                '[white]'+str(user['name']),
+                '[white]'+str(user['username']),
+                '[white]'+str(is_speaker),
+                '[white]'+str(is_moderator),
+                '[white]'+str(desc),
+            )
+        else:
+            table.add_row(
+                '[orange1]'+str(i),
+                '[orange1]'+str(user['user_id']),
+                '[orange1]'+str(user['name']),
+                '[orange1]'+str(user['username']),
+                '[orange1]'+str(is_speaker),
+                '[orange1]'+str(is_moderator),
+                '[orange1]'+str(desc),
+            )
+        i+=1
+        # Check if the user is the speaker
+        if user['user_id'] == int(user_id):
+            channel_speaker_permission = bool(user['is_speaker'])
+
+        if i > 25:
+            break
+    console.print(table)
 
 def user_authentication(client):
     """ (Clubhouse) -> NoneType

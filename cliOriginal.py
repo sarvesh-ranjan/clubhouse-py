@@ -11,10 +11,6 @@ import sys
 import threading
 import configparser
 import keyboard
-import sys
-import json
-from pygments import highlight, lexers, formatters
-import time
 from rich.table import Table
 from rich.console import Console
 from clubhouse.clubhouse import Clubhouse
@@ -134,7 +130,7 @@ def process_onboarding(client):
         print("    Try registering by real device if this process pops again.")
         break
 
-def print_channel_list(client, max_limit=2000):
+def print_channel_list(client, max_limit=20):
     """ (Clubhouse) -> NoneType
 
     Print list of channels
@@ -145,64 +141,22 @@ def print_channel_list(client, max_limit=2000):
     table.add_column("")
     table.add_column("channel_name", style="cyan", justify="right")
     table.add_column("topic")
-    table.add_column("club_name")
     table.add_column("speaker_count")
-    table.add_column("speakers")
-    # SarveshRanjan user_id=1665037778
-    # channels = client.follow_club(club_id="1091619179")
-
-
-    formatted_json = json.dumps(client.follow_club(562769261), sort_keys=True, indent=4)
-    colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
-    print(colorful_json)
-
-    # formatted_json = json.dumps(client.get_actionable_notifications(), sort_keys=True, indent=4)
-    # colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
-    # print(colorful_json)
-
-    #a = client.join_channel(user_id="697056119")
-    #a = client.get_actionable_notifications()
-    # a = client.follow_club(source_topic_id="1664686491")
-
-    # a = client.get_actionable_notifications()
-    # print(a)
-    # a = json.dumps(client.search_clubs("Kashmir"), sort_keys=True, indent=4)
-    # a = json.dumps(client.get_notifications(),py sort_keys=True, indent=4)
-    # a = json.dumps(client.get_profile(user_id="1665037778"), sort_keys=True, indent=4)
-    # print(a)
-
-    # unfollow="500,2625,12160,7815,1354,4911,7729,6213,9599,4769,955,903,5062,1056,625,1312,4346,300,1215,9,4003,4620,334,6556,9638,3967,9585,5345,5692,10463,7466,5087,1348,7732,5068,360,10653,8602,1414,131,2267,3441,4075,786,203,425,163,58,8758,6158,1580,12213,5523,3829,7975,1150,6307,6827"
-    #
-    # for club in unfollow.split(','):
-    #     print("Unfollowing club: ", club)
-    #     b = client.unfollow_club(club_id=club)3339999
-    #     print(b)
-    #     time.sleep(2)
-    # #
-    # print(formatted_json)
-    #
-
-    # for channel in channels:
-    #     users = channel["users"]
-    #     speakers = ""
-    #     for user in users:
-    #         if user['is_speaker'] or user['is_moderator']:
-    #             bio = client.get_profile(user_id=user["user_id"])["user_profile"]["bio"]
-    #             speakers.join(user["name"])
-    #             print(bio[:10])
-    #
-    #
-    #
-    #     _option = ""
-    #     _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
-    #     table.add_row(
-    #         str(_option),
-    #         str(channel['channel']),
-    #         str(channel['topic']),
-    #         str(channel['club_name']),
-    #         str(int(channel['num_speakers'])),
-    #     )
-    # console.print(table)
+    channels = client.get_channels()['channels']
+    i = 0
+    for channel in channels:
+        i += 1
+        if i > max_limit:
+            break
+        _option = ""
+        _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
+        table.add_row(
+            str(_option),
+            str(channel['channel']),
+            str(channel['topic']),
+            str(int(channel['num_speakers'])),
+        )
+    console.print(table)
 
 def chat_main(client):
     """ (Clubhouse) -> NoneType
