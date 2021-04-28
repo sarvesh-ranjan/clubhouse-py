@@ -166,7 +166,7 @@ def print_channel_list(client, max_limit=2000):
         _option = ""
         _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
         clubInfo = channel['club']
-        clubName = ""
+        clubName = "-----"
         
         if clubInfo:
             clubName = clubInfo['name']
@@ -289,7 +289,7 @@ def chat_main(client):
 
         clubInfo = channel_info['club']
         clubID = ""
-        clubName = ""
+        clubName = "-----"
         clubDescription = ""
         if clubInfo:
             clubID = clubInfo['club_id']
@@ -380,7 +380,7 @@ def print_users(channel_info, user_id, client):
 
     print("Club: -> ")
     print("ClubID: ", clubID, " ClubName: ", clubName)
-    print("Descriontion: ", clubDescription)
+    print("Description: ", clubDescription)
     print("\nNumber of Users: ", number_of_users)
     print("____________________________________________________________________________")
     print(Fore.RED)
