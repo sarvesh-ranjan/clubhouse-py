@@ -152,7 +152,7 @@ def print_channel_list(client, max_limit=2000):
     # channels = client.follow_club(club_id="1091619179")
 
 
-    formatted_json = json.dumps(client.follow_club(562769261), sort_keys=True, indent=4)
+    formatted_json = json.dumps(client.follow_club(380286107), sort_keys=True, indent=4)
     colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
     print(colorful_json)
 

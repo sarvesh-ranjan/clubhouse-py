@@ -147,7 +147,7 @@ def print_channel_list(client, max_limit=2000):
     table.add_column("channel", style="cyan", justify="right")
     table.add_column("topic")
     table.add_column("club_name")
-    table.add_column("users_count")
+    table.add_column("count")
     table.add_column("speakers")
     channels = client.get_channels()['channels']
     i = 1
@@ -166,7 +166,7 @@ def print_channel_list(client, max_limit=2000):
         _option = ""
         _option += "\xEE\x85\x84" if channel['is_social_mode'] or channel['is_private'] else ""
         clubInfo = channel['club']
-        clubName = "-----"
+        clubName = "----------"
 
         if clubInfo:
             clubName = clubInfo['name']
@@ -289,7 +289,7 @@ def chat_main(client):
 
         clubInfo = channel_info['club']
         clubID = ""
-        clubName = "-----"
+        clubName = "----------"
         clubDescription = ""
         if clubInfo:
             clubID = clubInfo['club_id']
@@ -408,7 +408,7 @@ def print_users(channel_info, user_id, client):
         if not is_moderator:
             is_moderator = "-"
 
-        desc = "-----"
+        desc = "----------"
         if user['is_speaker']:
             desc = client.get_profile(user['user_id'])['user_profile']['bio']
         if i%2 == 0:
