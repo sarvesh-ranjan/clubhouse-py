@@ -142,7 +142,7 @@ def print_channel_list(client, max_limit=2000):
     # Get channels and print out
 
     console = Console()
-    table = Table(show_header=True, header_style="bold magenta")
+    table = Table(show_header=True, header_style="bold magenta", padding=(1, 1, 1, 0))
     table.add_column("#")
     table.add_column("channel", style="cyan", justify="right")
     table.add_column("topic")
