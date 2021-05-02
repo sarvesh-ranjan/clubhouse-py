@@ -393,8 +393,8 @@ def print_users(channel_info, user_id, client):
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("#", style="cyan", justify="right")
     table.add_column("user_id")
-    table.add_column("username")
-    table.add_column("name")
+    table.add_column("User")
+    # table.add_column("name")
     table.add_column("s-m")
     table.add_column("description")
 
@@ -424,13 +424,13 @@ def print_users(channel_info, user_id, client):
 
         if desc == "":
             desc = "----------"
-
+        username_name = user['name'] + " (" + user['username'] + ")"
         if i%2 == 0:
             table.add_row(
                 '[white]'+str(i),
                 '[white]'+str(user['user_id']),
-                '[white]'+str(user['name']),
-                '[white]'+str(user['username']),
+                '[white]'+username_name,
+                # '[white]'+str(user['username']),
                 '[white]'+str(is_speaker_mod),
                 '[white]'+str(desc),
             )
@@ -438,8 +438,8 @@ def print_users(channel_info, user_id, client):
             table.add_row(
                 '[orange1]'+str(i),
                 '[orange1]'+str(user['user_id']),
-                '[orange1]'+str(user['name']),
-                '[orange1]'+str(user['username']),
+                '[orange1]'+username_name,
+                # '[orange1]'+str(user['username']),
                 '[orange1]'+str(is_speaker_mod),
                 '[orange1]'+str(desc),
             )
