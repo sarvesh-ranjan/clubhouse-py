@@ -412,12 +412,12 @@ def print_users(channel_info, user_id, client):
             desc = client.get_profile(user['user_id'])['user_profile']['bio']
 
         is_speaker_mod = ""
-        if is_speaker:
+        if is_speaker != "-":
             is_speaker_mod += "T"
         else:
             is_speaker_mod += "F"
         is_speaker_mod += "-"
-        if is_moderator:
+        if is_moderator != "-":
             is_speaker_mod += "T"
         else:
             is_speaker_mod += "F"
